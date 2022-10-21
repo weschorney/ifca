@@ -42,7 +42,7 @@ import sys
 import tarfile
 
 from six.moves import urllib
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 # from tensorflow.models.image.cifar10 import cifar10_input
 import cifar10_input
@@ -56,6 +56,8 @@ import cifar10_input
 #                            """Path to the CIFAR-10 data directory.""")
 # tf.app.flags_DEFINE_boolean('use_fp16', False,
 #                             """Train the model using fp16.""")
+
+tf.disable_eager_execution()
 
 flags_batch_size = 128
 flags_data_dir =  '/tmp/cifar10_data'
@@ -258,7 +260,7 @@ def inference(images):
     # reshape = tf.reshape(pool2, [flags_batch_size, -1])
     # import ipdb; ipdb.set_trace()
     reshape = tf.reshape(pool2, [-1, 6*6*64]) # pool2's shape=(?, 6, 6, 64)
-    dim = reshape.get_shape()[1].value
+    dim = reshape.get_shape()[1]
     weights = _variable_with_weight_decay('weights', shape=[dim, 384],
                                           stddev=std2, wd=0.004)
     biases = _variable_on_cpu('biases', [384], tf.constant_initializer(0.1))

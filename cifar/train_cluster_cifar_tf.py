@@ -6,21 +6,21 @@ import itertools
 import pickle
 import copy
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 import numpy as np
 
 from util import *
 import cifar10
 
-
+tf.disable_eager_execution()
 
 LR_DECAY = True
 # LR_DECAY = False
 
-def main():
+def main(idx=0):
 
-    config = get_config()
+    config = get_config(idx=idx)
     config['train_seed'] = config['data_seed']
     print("config:",config)
 
@@ -29,40 +29,48 @@ def main():
     exp.run()
 
 
-def get_config():
+def get_config(idx=0):
     arg_seed = 0
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--project-dir",type=str,default="output")
-    parser.add_argument("--dataset-dir",type=str,default="output")
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument("--project-dir",type=str,default="output")
+    #parser.add_argument("--dataset-dir",type=str,default="output")
     # parser.add_argument("--num-epochs",type=float,default=)
     # parser.add_argument("--lr",type=float,default=0.2)
-    parser.add_argument("--data-seed",type=int,default=0)
-    parser.add_argument("--train-seed",type=int,default=arg_seed)
-    parser.add_argument("--config-override",type=str,default="")
-    args = parser.parse_args()
+    #parser.add_argument("--data-seed",type=int,default=0)
+    #parser.add_argument("--train-seed",type=int,default=arg_seed)
+    #parser.add_argument("--config-override",type=str,default="")
+    #args = parser.parse_args()
+    args = {
+        'project_dir':'output',
+        'dataset_dir':'output',
+        'lr':0.01,
+        'data_seed':idx,
+        'train_seed':idx,
+    }
 
     # read config json and update the sysarg
     with open("config.json", "r") as read_file:
         config = json.load(read_file)
 
-    args_dict = vars(args)
-    config.update(args_dict)
+    #args_dict = vars(args)
+    config.update(args)
 
-    if config["config_override"] == "":
-        del config['config_override']
-    else:
-        print(config['config_override'])
-        config_override = json.loads(config['config_override'])
-        del config['config_override']
-        config.update(config_override)
+    #if config["config_override"] == "":
+    #    del config['config_override']
+    #else:
+    #    print(config['config_override'])
+    #    config_override = json.loads(config['config_override'])
+    #    del config['config_override']
+    #    config.update(config_override)
 
     return config
 
 
 class TrainCIFARCluster(object):
-    def __init__(self, config):
+    def __init__(self, config, idx=0):
         self.config = config
+        self.idx = idx
 
         assert self.config['m'] % self.config['p'] == 0
 
@@ -125,7 +133,7 @@ class TrainCIFARCluster(object):
 
 
     def _setup_dataset(self, num_data, p, m, n, random = True):
-
+        print(num_data)
         assert (m // p) * n == num_data
 
         dataset = {}
@@ -352,7 +360,7 @@ class TrainCIFARCluster(object):
             results.append(result)
 
             if epoch % 10 == 0 or epoch == num_epochs - 1 :
-                with open(self.result_fname+".pickle", 'wb') as outfile:
+                with open(self.result_fname+str(self.idx)+".pickle", 'wb') as outfile:
                     pickle.dump(results, outfile)
                     print(f'result written at {self.result_fname+".pickle"}')
                 # self.save_checkpoint()
@@ -689,9 +697,9 @@ class TrainCIFARCluster(object):
         else:
             raise NotImplementedError("only p=1,2,4 supported")
 
-        X_b2 = np.rot90(X_b, k=k, axes = (1,2)) # X_b: (bs, 32, 32, 3)
+        #X_b2 = np.rot90(X_b, k=k, axes = (1,2)) # X_b: (bs, 32, 32, 3)
 
-        X_b3 = self.sess.run(transform_op, feed_dict = { self.x_tr_pl : X_b2 } )
+        X_b3 = self.sess.run(transform_op, feed_dict = { self.x_tr_pl : X_b } )
 
         return (X_b3, y_b)
 
@@ -775,6 +783,6 @@ if __name__ == '__main__':
 
     # tf.app.run(argv=sys.argv[:1])
     start_time = time.time()
-    main()
+    main(idx=1)
     duration = (time.time() - start_time)
     print("---train cluster Ended in %0.2f hour (%.3f sec) " % (duration/float(3600), duration))

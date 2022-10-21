@@ -1,17 +1,14 @@
 {
-    "m" : 2400,
-    "m_test" : 400,
+    "m" : 24,
+    "m_test" : 4,
     "p" : 4,
-    "n" : 100,
+    "n" : 10000,
 
-    "h1": 200,
+    "h1": 100,
 
-    "num_epochs": 300,
+    "num_epochs": 650,
 
-    "batch_size":100,
+    "batch_size":50,
     "tau":10,
-    "lr":0.1,
-
-    "data_seed":0,
-    "train_seed":0
+    "lr":0.01
 }

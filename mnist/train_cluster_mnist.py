@@ -22,60 +22,66 @@ from util import *
 # LR_DECAY = True
 LR_DECAY = False
 
-def main():
+def main(idx=0):
 
-    config = get_config()
+    config = get_config(idx=idx)
 
     config['train_seed'] = config['data_seed']
 
     print("config:",config)
 
-    exp = TrainMNISTCluster(config)
+    exp = TrainMNISTCluster(config, idx=idx)
     exp.setup()
     exp.run()
 
 
-def get_config():
+def get_config(idx=0):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--project-dir",type=str,default="output")
-    parser.add_argument("--dataset-dir",type=str,default="output")
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument("--project-dir",type=str,default="output")
+    #parser.add_argument("--dataset-dir",type=str,default="output")
     # parser.add_argument("--num-epochs",type=float,default=)
-    parser.add_argument("--lr",type=float,default=0.1)
-    parser.add_argument("--data-seed",type=int,default=0)
-    parser.add_argument("--train-seed",type=int,default=0)
-    parser.add_argument("--config-override",type=str,default="")
-    args = parser.parse_args()
+    #parser.add_argument("--lr",type=float,default=0.01)
+    #parser.add_argument("--data-seed",type=int,default=0)
+    #parser.add_argument("--train-seed",type=int,default=0)
+    #parser.add_argument("--config-override",type=str,default="")
+    #args = parser.parse_args()
+    args = {
+        'project_dir':'output',
+        'dataset_dir':'output',
+        'lr':0.01,
+        'data_seed':idx,
+        'train_seed':idx,
+    }
 
     # read config json and update the sysarg
-    with open("config.json", "r") as read_file:
+    with open("./config.json", "r") as read_file:
         config = json.load(read_file)
 
-    args_dict = vars(args)
-    config.update(args_dict)
+    config.update(args)
 
-    if config["config_override"] == "":
-        del config['config_override']
-    else:
-        print(config['config_override'])
-        config_override = json.loads(config['config_override'])
-        del config['config_override']
-        config.update(config_override)
+    #if config["config_override"] == "":
+    #    del config['config_override']
+    #else:
+    #    print(config['config_override'])
+    #    config_override = json.loads(config['config_override'])
+    #    del config['config_override']
+    #    config.update(config_override)
 
     return config
 
 
 class TrainMNISTCluster(object):
-    def __init__(self, config):
+    def __init__(self, config, idx=0):
         self.config = config
-
+        self.idx = str(idx)
         assert self.config['m'] % self.config['p'] == 0
 
     def setup(self):
 
         os.makedirs(self.config['project_dir'], exist_ok = True)
 
-        self.result_fname = os.path.join(self.config['project_dir'], 'results.pickle')
+        self.result_fname = os.path.join(self.config['project_dir'], 'results' + self.idx + '.pickle')
         self.checkpoint_fname = os.path.join(self.config['project_dir'], 'checkpoint.pt')
 
         self.setup_datasets()
@@ -468,8 +474,8 @@ class TrainMNISTCluster(object):
         else:
             raise NotImplementedError("only p=1,2,4 supported")
 
-        X_batch2 = torch.rot90(X_batch, k=int(k), dims = (1,2))
-        X_batch3 = X_batch2.reshape(-1, 28 * 28)
+        #X_batch2 = torch.rot90(X_batch, k=int(k), dims = (1,2))
+        X_batch3 = X_batch.reshape(-1, 28 * 28)
 
         # import ipdb; ipdb.set_trace()
 
