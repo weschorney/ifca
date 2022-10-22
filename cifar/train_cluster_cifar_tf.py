@@ -24,7 +24,7 @@ def main(idx=0):
     config['train_seed'] = config['data_seed']
     print("config:",config)
 
-    exp = TrainCIFARCluster(config)
+    exp = TrainCIFARCluster(config, idx=idx)
     exp.setup()
     exp.run()
 
