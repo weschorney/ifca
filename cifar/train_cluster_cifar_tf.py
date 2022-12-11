@@ -783,6 +783,6 @@ if __name__ == '__main__':
 
     # tf.app.run(argv=sys.argv[:1])
     start_time = time.time()
-    main(idx=1)
+    main(idx=3)
     duration = (time.time() - start_time)
     print("---train cluster Ended in %0.2f hour (%.3f sec) " % (duration/float(3600), duration))
